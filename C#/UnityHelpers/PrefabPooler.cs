@@ -5,7 +5,12 @@ using UnityEngine;
 
 public class PrefabPooler : MonoBehaviour
 {
+    public enum PoolOverflowBehavior { ReturnNull, Grow, RecycleOldest }
+
     [Header("Instance refs and attributes")]
+
+    [Tooltip("Comportement de dépassement de pool")]
+    public PoolOverflowBehavior overflowBehavior;
     [Tooltip("Activer l'element a l'instanciation")]
     public bool activated;
     [Tooltip("Reference du parent auquel on accroche l'obj")]
