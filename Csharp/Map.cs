@@ -9,9 +9,9 @@ public class Map : MonoBehaviour
 
     //spawner and exits to end the level
     [SerializeField]
-    private Tile entree;
+    private Tile _entree;
     [SerializeField]
-    private List<Tile> sorties;
+    private List<Tile> _sorties;
 
     private Dictionary<Vector2Int, Tile> _mapData = new Dictionary<Vector2Int, Tile>();
 
@@ -33,8 +33,8 @@ public class Map : MonoBehaviour
                                                 Mathf.RoundToInt(t.transform.position.z)
                                             );
 
-            if (t.GetComponent<Entrance>()) entree = t;
-            if (t.GetComponent<Exit>()) sorties.Add(t);
+            if (t.GetComponent<Entrance>()) _entree = t;
+            if (t.GetComponent<Exit>()) _sorties.Add(t);
 
             t.TileIndex = pos;
             t.gameObject.name = "Tile [" + pos.x + " , " + pos.y + "]";
