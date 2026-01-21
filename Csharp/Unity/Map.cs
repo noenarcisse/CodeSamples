@@ -25,7 +25,7 @@ public class Map : MonoBehaviour
     /// </summary>
     public void InitMap()
     {
-        tileRevealed = new List<Tile>();
+        tileRevealed = new();
         foreach (Tile t in this.gameObject.transform.GetComponentsInChildren<Tile>())
         {
             Vector2Int pos = new Vector2Int(
@@ -58,16 +58,14 @@ public class Map : MonoBehaviour
     /// <returns>The tile Object or null if no tile with the Unit on it was found</returns>
     public Tile FindTileWithUnit(Unit u)
     {
-        Tile currentTile = null;
         foreach (Tile t in _mapData.Values)
         {
-            if (t.GetComponent<Tile>().hasUnitOn && t.GetComponent<Tile>().unitOnTile == u)
+            if (t.hasUnitOn && t.unitOnTile == u)
             {
-                currentTile = t.GetComponent<Tile>();
-                break;
+                return t;
             }
         }
-        return currentTile;
+        return null;
     }
 
 
@@ -139,7 +137,6 @@ public class Map : MonoBehaviour
     /// </summary>
     public void ClearRevealedTiles()
     {
-
             if (tileRevealed.Count > 0)
             {
                 foreach (Tile t in tileRevealed)

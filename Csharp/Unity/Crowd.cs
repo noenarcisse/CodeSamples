@@ -36,15 +36,12 @@ public class Crowd : MonoBehaviour
         cases = new GameObject[i, j];
         mouseHoverScripts = new OnMouseHover[i, j];
 
-
-        int b = 0;
-
         mid1 = i / 2;
         mid2 = j / 2;
 
         for (int a = 0; a < i; a++)
         {
-            while (b < j)
+            for (int b = 0; b < j; b++)
             {
                 GameObject noct = Instantiate(NoctuleInstanceRef, spawnPos, Quaternion.identity, NoctulesParent.transform);
                 GameObject c = Instantiate(CaseInstanceRef, spawnPos, Quaternion.identity, CasesParent.transform);
@@ -66,9 +63,7 @@ public class Crowd : MonoBehaviour
                 crowd[a, b] = noct;
                 cases[a, b] = c;
 
-                b++;
             }
-            b = 0;
         }
 
         //calcule du bound du groupe de noct post deplacement/random
@@ -135,20 +130,16 @@ public class Crowd : MonoBehaviour
     /// </summary>
     public void RandomPlace()
     {
-
-        int b = 0;
         for (int a = 0; a < i; a++)
         {
-            while (b < j)
+            for (int b = 0; b < j; b++)
             {
                 //on ne lance un rand que si le noctule n'est pas cible par le joueur qui regarde un truc dessus
                 if (!mouseHoverScripts[a, b].isMouseOver)
                 {
                     cases[a, b].transform.localPosition = new Vector3(Random.Range(rand.x * Mathf.Abs(a - mid1), rand.y * Mathf.Abs(a - mid1)) + a, 0f, Random.Range(rand.x * Mathf.Abs(b - mid2), rand.y * Mathf.Abs(b - mid2)) + b);
                 }
-                b++;
             }
-            b = 0;
         }
 
     }

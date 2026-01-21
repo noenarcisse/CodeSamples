@@ -26,7 +26,7 @@ public class PrefabPooler : MonoBehaviour
 
     void Start()
     {
-        pfbList = new List<GameObject>();
+        pfbList = new();
         for (int i = 0; i < nPool; i++)
         {
             GameObject obj =  Instantiate(pfbAPool[Random.Range(0, pfbAPool.Count)]);
