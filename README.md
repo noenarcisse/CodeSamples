@@ -1,6 +1,8 @@
 # C#
 
 ## C# ASP.NET
+[JobEndpoints.cs](https://github.com/noenarcisse/CodeSamples/blob/main/Csharp/ASP%20NET/JobEndpoints.cs) : Exerpt of API endpoints from Joblin. <br/>
+[JobService.cs](https://github.com/noenarcisse/CodeSamples/blob/main/Csharp/ASP%20NET/JobService.cs) : Exerpt of an API service from Joblin.<br/>
 
 ## C# Unity
 [Crowd.cs](https://github.com/noenarcisse/CodeSamples/blob/main/Csharp/Unity/Crowd.cs) : Crowd system. Aims to mimic the behavior of a chaotic horde with configurable spread and noise ticks. <br/>
