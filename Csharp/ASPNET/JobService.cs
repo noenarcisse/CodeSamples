@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Joblin.Data;
 using Joblin.Models;
 
+namespace Joblin.Services;
+
 public class JobService
 {
     private readonly AppDbContext _db;
