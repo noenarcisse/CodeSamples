@@ -7,20 +7,24 @@ using Babeltut.App.Domain.ValueObjects;
 using Babeltut.App.DTO;
 
 using static Babeltut.App.Extensions.OneOfExtensions;
+using Babeltut.App.Domain.Interfaces;
 
 namespace Babeltut.App.Orchestration;
+
+//gere les erreurs liés au routing
 
 /// <summary>
 /// Sort and send the file to the right service for translation
 /// </summary>
-public static class FileDispatcher
+public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelService, IErrorHandler appError)
 {
+
     /// <summary>
     /// Tries to send the infos to translations based on the user inputs
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns></returns>
-    public async static Task Dispatch(UserInputsDTO inputs)
+    public async Task Dispatch(UserInputsDTO inputs)
     {
         var err = ValidateFilePath(inputs) ?? ValidateOutputDirPath(inputs);
         if (err is DocumentError)
@@ -30,19 +34,24 @@ public static class FileDispatcher
 
         var file = CreateDocument(inputs);
         await file.Match(
-            word => DocXTranslator.Translate(word),
-            excel => XLTranslatorService.Translate(excel),
+            word => wordService.Translate(word),
+            excel => excelService.Translate(excel),
             error => SendToError(error)
         );
     }
 
-    private static Task SendToError(DocumentError err)
+    /// <summary>
+    /// Consumme any async before sending sync to AppError Service
+    /// </summary>
+    /// <param name="err"></param>
+    /// <returns></returns>
+    private Task SendToError(DocumentError err)
     {
-        AppError.Warns(err);
+        appError.Warns(err);
         return Task.CompletedTask;
     }
 
-    private static OneOf<WordDocument, ExcelDocument, DocumentError> CreateDocument(UserInputsDTO inputs)
+    private OneOf<WordDocument, ExcelDocument, DocumentError> CreateDocument(UserInputsDTO inputs)
     {
         var extension = Path.GetExtension(inputs.FilePath).ToLower();
 
@@ -53,7 +62,7 @@ public static class FileDispatcher
             _ => new DocumentError(inputs, "This file type is not supported")
         };
     }
-    private static OneOf<ExcelDocument, DocumentError> TryCreateExcelDocument(UserInputsDTO inputs)
+    private OneOf<ExcelDocument, DocumentError> TryCreateExcelDocument(UserInputsDTO inputs)
     {
         var translationStyleResult = ResolveExcelStrategy(inputs);
         if (translationStyleResult.TryPickT2(out var error, out var translationStyle))
@@ -61,7 +70,7 @@ public static class FileDispatcher
 
         return CreateExcelDocument(inputs, translationStyle);
     }
-    private static WordDocument CreateWordDocument(UserInputsDTO inputs)
+    private WordDocument CreateWordDocument(UserInputsDTO inputs)
     {
         return new WordDocument(
                                     inputs.From,
@@ -72,7 +81,7 @@ public static class FileDispatcher
                );
     }
 
-    private static ExcelDocument CreateExcelDocument(UserInputsDTO inputs, OneOf<WholeSheet, Columns> translationStrat)
+    private ExcelDocument CreateExcelDocument(UserInputsDTO inputs, OneOf<WholeSheet, Columns> translationStrat)
     {
         return new ExcelDocument(
                                     inputs.From,
@@ -89,7 +98,7 @@ public static class FileDispatcher
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    private static OneOf<SameDirectory, OutputPathDirectory> CreateOutputStrategy(string? path) => path switch
+    private OneOf<SameDirectory, OutputPathDirectory> CreateOutputStrategy(string? path) => path switch
     {
         null => new SameDirectory(),
         _ => new OutputPathDirectory(path)
@@ -100,7 +109,7 @@ public static class FileDispatcher
     /// </summary>
     /// <param name="column"></param>
     /// <returns></returns>
-    private static bool IsValidExcelColumnFormat(string column)
+    private bool IsValidExcelColumnFormat(string column)
     {
         return  column.Length > 0 && //min A
                 column.Length <= 3; //max value XFD
@@ -111,7 +120,7 @@ public static class FileDispatcher
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns></returns>
-    private static OneOf<WholeSheet, Columns, DocumentError> ResolveExcelStrategy(UserInputsDTO inputs)
+    private OneOf<WholeSheet, Columns, DocumentError> ResolveExcelStrategy(UserInputsDTO inputs)
     {
         Debug.Assert(inputs.Options is not null, "ExcelOptionsDTO should never be null here");
         if (inputs.Options is null) throw new InvalidOperationException("The excel options object is null");
@@ -140,7 +149,7 @@ public static class FileDispatcher
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns>A DocumentError with details if failed, null otherwise</returns>
-    private static DocumentError? ValidateFilePath(UserInputsDTO inputs)
+    private DocumentError? ValidateFilePath(UserInputsDTO inputs)
     {
         if (!File.Exists(inputs.FilePath)) return new DocumentError(inputs, "The file cannot be found");
 
@@ -151,7 +160,7 @@ public static class FileDispatcher
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns></returns>
-    private static DocumentError? ValidateOutputDirPath(UserInputsDTO inputs)
+    private DocumentError? ValidateOutputDirPath(UserInputsDTO inputs)
     {
         if (inputs.OutputPath is not null)
             if (!Directory.Exists(inputs.OutputPath))
