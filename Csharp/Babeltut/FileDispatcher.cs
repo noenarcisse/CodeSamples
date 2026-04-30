@@ -5,9 +5,9 @@ using OneOf;
 using Babeltut.App.Domain.Entities;
 using Babeltut.App.Domain.ValueObjects;
 using Babeltut.App.DTO;
+using Babeltut.App.Domain.Interfaces;
 
 using static Babeltut.App.Extensions.OneOfExtensions;
-using Babeltut.App.Domain.Interfaces;
 
 namespace Babeltut.App.Orchestration;
 
@@ -59,7 +59,7 @@ public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelS
         {
             ".xlsx" => TryCreateExcelDocument(inputs).AsDispatcherResult(),
             ".doc" or ".docx" => CreateWordDocument(inputs),
-            _ => new DocumentError(inputs, "This file type is not supported")
+            _ => new DocumentError(inputs, ErrorCodes.FileNotSupported)
         };
     }
     private OneOf<ExcelDocument, DocumentError> TryCreateExcelDocument(UserInputsDTO inputs)
@@ -136,11 +136,11 @@ public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelS
 
         //format invalide
         if (!IsValidExcelColumnFormat(columnFrom!) || !IsValidExcelColumnFormat(columnTo!))
-            return new DocumentError(inputs, "There is an error with the columns format for an excel document");
+            return new DocumentError(inputs, ErrorCodes.InvalidColumnsFormat);
 
         //format valide mais 2x la meme col
         if (columnFrom == columnTo)
-            return new DocumentError(inputs, "The excel columns cannot be the same");
+            return new DocumentError(inputs, ErrorCodes.SameColumns);
 
         return new Columns(columnFrom!, columnTo!, sheet);
     }
@@ -152,7 +152,7 @@ public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelS
     /// <returns>A DocumentError with details if failed, null otherwise</returns>
     private DocumentError? ValidateFilePath(UserInputsDTO inputs)
     {
-        if (!File.Exists(inputs.FilePath)) return new DocumentError(inputs, "The file cannot be found");
+        if (!File.Exists(inputs.FilePath)) return new DocumentError(inputs, ErrorCodes.FileNotFound);
 
         return null;
     }
@@ -165,7 +165,7 @@ public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelS
     {
         if (inputs.OutputPath is not null)
             if (!Directory.Exists(inputs.OutputPath))
-                return new DocumentError(inputs, "The output directory does not exist");
+                return new DocumentError(inputs, ErrorCodes.OutputPathNotFound);
 
         return null;
     }
