@@ -112,7 +112,8 @@ public class FileDispatcher(IWordTranslator wordService, IExcelTranslator excelS
     private bool IsValidExcelColumnFormat(string column)
     {
         return  column.Length > 0 && //min A
-                column.Length <= 3; //max value XFD
+                column.Length <= 3 && //max chars
+                String.CompareOrdinal(column, "XFD") <= 0; // max col value "XFD"
     }
 
     /// <summary>
